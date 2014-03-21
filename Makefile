@@ -123,9 +123,9 @@ ETOOL := etool
 
 LDFLAGS += -L$(shell pwd)
 
-src/exec/%:
+src/exec/%: src/protobuf/built-in.o
 	$(Q) $(MAKE) $(build)=src/exec $@
-src/exec/built-in.o:
+src/exec/built-in.o: src/protobuf/built-in.o
 	$(Q) $(MAKE) $(build)=src/exec all
 src/exec/$(ETOOL): src/exec/built-in.o $(PROGRAM) src/protobuf/built-in.o
 	$(E) "  LINK    " $@
@@ -133,9 +133,9 @@ src/exec/$(ETOOL): src/exec/built-in.o $(PROGRAM) src/protobuf/built-in.o
 
 #
 # Library itself
-src/%: $(EARLY-GEN)
+src/%: $(EARLY-GEN) | src/protobuf/built-in.o
 	$(Q) $(MAKE) $(build)=src $@
-src/built-in.o: src $(EARLY-GEN)
+src/built-in.o: $(EARLY-GEN) | src/protobuf/built-in.o
 	$(Q) $(MAKE) $(build)=src all
 
 $(PROGRAM): src/$(PROGRAM)
