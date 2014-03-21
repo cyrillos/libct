@@ -110,6 +110,18 @@ export cflags-y
 EARLY-GEN := $(VERSION_HEADER) config
 
 #
+# Executable tool
+ETOOL := etool
+
+src/exec/%:
+	$(Q) $(MAKE) $(build)=src/exec $@
+src/exec/built-in.o:
+	$(Q) $(MAKE) $(build)=src/exec all
+src/exec/$(ETOOL): src/exec/built-in.o
+	$(E) "  LINK    " $@
+	$(Q) $(CC) $(CFLAGS) $^ $(LIBS) $(LDFLAGS) -o $@
+
+#
 # Library itself
 src/%: $(EARLY-GEN)
 	$(Q) $(MAKE) $(build)=src $@
@@ -120,7 +132,7 @@ $(PROGRAM): src/$(PROGRAM)
 	$(E) "  LN      " $@
 	$(Q) $(LN) -s $^ $@
 
-all: $(PROGRAM)
+all: $(PROGRAM) src/exec/$(ETOOL)
 	@true
 
 docs:
@@ -133,8 +145,10 @@ tags:
 
 clean:
 	$(Q) $(MAKE) $(build)=src clean
+	$(Q) $(MAKE) $(build)=src/exec clean
 	$(Q) $(MAKE) -s -C Documentation clean
 	$(Q) $(RM) $(PROGRAM)
+	$(Q) $(RM) src/exec/$(ETOOL)
 	$(Q) $(RM) $(CONFIG)
 	$(Q) $(RM) $(VERSION_HEADER)
 
