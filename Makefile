@@ -113,13 +113,15 @@ EARLY-GEN := $(VERSION_HEADER) config
 # Executable tool
 ETOOL := etool
 
+LDFLAGS += -L$(shell pwd)
+
 src/exec/%:
 	$(Q) $(MAKE) $(build)=src/exec $@
 src/exec/built-in.o:
 	$(Q) $(MAKE) $(build)=src/exec all
-src/exec/$(ETOOL): src/exec/built-in.o
+src/exec/$(ETOOL): src/exec/built-in.o $(PROGRAM)
 	$(E) "  LINK    " $@
-	$(Q) $(CC) $(CFLAGS) $^ $(LIBS) $(LDFLAGS) -o $@
+	$(Q) $(CC) $(CFLAGS) $^ $(LIBS) $(LDFLAGS) -lct -o $@
 
 #
 # Library itself
