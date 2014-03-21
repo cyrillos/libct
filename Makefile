@@ -68,7 +68,7 @@ export VERSION_MAJOR VERSION_MINOR VERSION_SUBLEVEL VERSION_EXTRA VERSION_NAME
 include scripts/Makefile.version
 include scripts/Makefile.config
 
-LIBS		:= -lrt
+LIBS		:= -lrt -lprotobuf-c
 
 DEFINES		+= -D_FILE_OFFSET_BITS=64
 DEFINES		+= -D_GNU_SOURCE
@@ -110,6 +110,14 @@ export cflags-y
 EARLY-GEN := $(VERSION_HEADER) config
 
 #
+# Protobuf data, shared across library
+# and executable tool
+src/protobuf/%:
+	$(Q) $(MAKE) $(build)=src/protobuf $@
+src/protobuf/built-in.o:
+	$(Q) $(MAKE) $(build)=src/protobuf all
+
+#
 # Executable tool
 ETOOL := etool
 
@@ -119,7 +127,7 @@ src/exec/%:
 	$(Q) $(MAKE) $(build)=src/exec $@
 src/exec/built-in.o:
 	$(Q) $(MAKE) $(build)=src/exec all
-src/exec/$(ETOOL): src/exec/built-in.o $(PROGRAM)
+src/exec/$(ETOOL): src/exec/built-in.o $(PROGRAM) src/protobuf/built-in.o
 	$(E) "  LINK    " $@
 	$(Q) $(CC) $(CFLAGS) $^ $(LIBS) $(LDFLAGS) -lct -o $@
 
@@ -148,6 +156,7 @@ tags:
 clean:
 	$(Q) $(MAKE) $(build)=src clean
 	$(Q) $(MAKE) $(build)=src/exec clean
+	$(Q) $(MAKE) $(build)=src/protobuf clean
 	$(Q) $(MAKE) -s -C Documentation clean
 	$(Q) $(RM) $(PROGRAM)
 	$(Q) $(RM) src/exec/$(ETOOL)
